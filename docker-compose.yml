@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+
+  mongodb:
+    container_name: mongo_service
+    image: mongo:latest
+    restart: unless-stopped
+    volumes:
+      - ./backend/data:/data
+    ports: 
+      - "27017:27017"
+  
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    expose:
+      - 6379
+    depends_on:
+      - mongodb
+
+  backend:
+    container_name: backend
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.sample
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - redis
+    
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env.sample
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
